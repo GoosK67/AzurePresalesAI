@@ -1,1 +1,1 @@
-# BidBrain-Azure
+# BidBrain of BidCraft
