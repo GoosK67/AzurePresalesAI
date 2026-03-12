@@ -1,33 +1,63 @@
+name: Deploy PROD (gated)
 
-name: Deploy PROD (manual)
 on:
   workflow_dispatch:
     inputs:
       resourceGroup:
-        description: 'Target resource group'
+        description: 'Doel-RG (bv. rg-ai-foundry-prod)'
         required: true
         default: 'rg-ai-foundry-prod'
       location:
-        description: 'Azure region'
+        description: 'Azure regio'
         required: true
         default: 'westeurope'
+
 permissions:
   id-token: write
   contents: read
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
+env:
+  TEMPLATE: infra/azure-ai-platform/platform.bicep
+  PARAMS: infra/azure-ai-platform/parameters.json
+
 jobs:
-  deploy:
+  prod-guard:
     runs-on: ubuntu-latest
     environment: prod
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      - name: Deploy Bicep to RG
-        working-directory: infra/azure-ai-platform
+
+      - name: Install Azure CLI (incl. bicep)
         run: |
-          az group create -n "${{ github.event.inputs.resourceGroup }}" -l "${{ github.event.inputs.location }}"
-          az deployment group create             --resource-group "${{ github.event.inputs.resourceGroup }}"             --template-file platform.bicep             --parameters @parameters.json
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az bicep install
+
+      - name: Create/ensure RG
+        run: az group create -n "${{ github.event.inputs.resourceGroup }}" -l "${{ github.event.inputs.location }}"
+
+      - name: What-if (PROD)
+        run: |
+          az deployment group what-if \
+            --resource-group "${{ github.event.inputs.resourceGroup }}" \
+            --template-file "${{ env.TEMPLATE }}" \
+            --parameters @"${{ env.PARAMS }}"
+
+      - name: Deploy (PROD)
+        run: |
+          az deployment group create \
+            --resource-group "${{ github.event.inputs.resourceGroup }}" \
+            --template-file "${{ env.TEMPLATE }}" \
+            --parameters @"${{ env.PARAMS }}"
