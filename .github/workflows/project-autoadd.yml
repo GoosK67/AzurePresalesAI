@@ -41,3 +41,4 @@ jobs:
             }`;
             const r = await github.graphql(q, { projectId, contentId: issueId });
             core.info(`Added. Item: ${r.addProjectV2ItemById.item.id}`);
+            
