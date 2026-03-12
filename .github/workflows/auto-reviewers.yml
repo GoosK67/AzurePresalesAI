@@ -1,0 +1,69 @@
+nname: Auto request reviewers
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  auto-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto request reviewers (users only)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+
+            // 1) Haal gewijzigde bestanden op
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number: prNumber }
+            );
+            const changed = files.map(f => f.filename);
+
+            // 2) Alleen USER-BASED reviewer rules (geen teams meer!)
+            const rules = [
+              { globs: [/^infra\/.*\/modules\/openai\.bicep$/],        users: ['GoosK67'] },
+              { globs: [/^infra\/.*\/modules\/anthropic\.bicep$/],     users: ['GoosK67'] },
+              { globs: [/^infra\/.*\/modules\/watsonx\.bicep$/],       users: ['GoosK67'] },
+              { globs: [/^infra\/.*\/modules\/aks\.bicep$/],           users: ['GoosK67'] },
+              { globs: [/^infra\/.*\/modules\/(network|privateDns|privateEndpoints)\.bicep$/], users: ['GoosK67'] },
+              { globs: [/^infra\/.*\/modules\/(cosmos|search|storage)\.bicep$/], users: ['GoosK67'] },
+              { globs: [/^\.github\/workflows\/.+\.yml$/],             users: ['GoosK67'] },
+              { globs: [/^docs\/.+/],                                  users: ['GoosK67'] },
+              { globs: [/^infra\/.+/],                                 users: ['GoosK67'] }
+            ];
+
+            // 3) Verzamel alle users gebaseerd op matches
+            let users = [];
+            for (const file of changed) {
+              for (const rule of rules) {
+                if (rule.globs.some(rx => rx.test(file))) {
+                  users.push(...rule.users);
+                }
+              }
+            }
+
+            // 4) Verwijder duplicaten + PR auteur zelf
+            const author = context.payload.pull_request.user.login;
+            users = [...new Set(users.filter(u => u !== author))];
+
+            if (users.length === 0) {
+              core.info('No matching users to request.');
+              return;
+            }
+
+            // 5) Vraag de reviewers aan
+            await github.rest.pulls.requestReviewers({
+              owner,
+              repo,
+              pull_number: prNumber,
+              reviewers: users
+            });
+
+            core.info(`Requested reviewers: ${users.join(', ')}`);

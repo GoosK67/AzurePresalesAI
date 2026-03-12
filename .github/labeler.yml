@@ -4,9 +4,17 @@ modules:
   - infra/**/modules/**
 openai:
   - infra/**/modules/openai.bicep
-claude:
+anthropic:
   - infra/**/modules/anthropic.bicep
 watsonx:
   - infra/**/modules/watsonx.bicep
+aks:
+  - infra/**/modules/aks.bicep
+networking:
+  - infra/**/modules/{network,privateDns,privateEndpoints}.bicep
+data-platform:
+  - infra/**/modules/{cosmos,search,storage}.bicep
+ci-cd:
+  - .github/workflows/**
 docs:
   - docs/**

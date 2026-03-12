@@ -1,2 +1,26 @@
-# Update with your org/team handles
-* @koengo @your-org/ai-platform-core
+# Standaard fallback: jij krijgt alles
+*                                   @GoosK67
+
+# Infra-brede wijzigingen
+infra/**                            @your-org/ai-platform-core @GoosK67
+
+# Modules per domein (pas teams/handles aan)
+infra/**/modules/openai.bicep       @your-org/llm-platform     @GoosK67
+infra/**/modules/anthropic.bicep    @your-org/llm-platform     @GoosK67
+infra/**/modules/watsonx.bicep      @your-org/integration      @GoosK67
+infra/**/modules/aks.bicep          @your-org/aks-platform     @GoosK67
+infra/**/modules/privateDns.bicep   @your-org/networking       @GoosK67
+infra/**/modules/network.bicep      @your-org/networking       @GoosK67
+infra/**/modules/cosmos.bicep       @your-org/data-platform    @GoosK67
+infra/**/modules/search.bicep       @your-org/data-platform    @GoosK67
+infra/**/modules/storage.bicep      @your-org/data-platform    @GoosK67
+infra/**/modules/privateEndpoints.bicep @your-org/networking   @GoosK67
+infra/**/modules/functionapp.bicep  @your-org/app-platform     @GoosK67
+infra/**/modules/openai.bicep       @your-org/llm-platform     @GoosK67
+
+# Workflows en CI/CD
+.github/workflows/**                @your-org/devops           @GoosK67
+
+# Documentatie
+docs/**                              @your-org/documentation    @GoosK67
+``
