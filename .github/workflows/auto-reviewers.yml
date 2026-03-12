@@ -1,4 +1,4 @@
-nname: Auto request reviewers
+name: Auto request reviewers
 
 on:
   pull_request:
