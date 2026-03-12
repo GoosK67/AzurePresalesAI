@@ -10,8 +10,10 @@ permissions:
 jobs:
   preview:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Azure login
         uses: azure/login@v2
@@ -20,17 +22,21 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Create temporary RG
+      - name: Install Azure CLI + Bicep
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az bicep install
+
+      - name: Create temporary preview RG
         run: |
           RG="rg-pr-${{ github.event.number }}"
-          az group create -n $RG -l westeurope
+          az group create -n "$RG" -l westeurope
 
-      - name: What-if preview
+      - name: Preview what-if
         working-directory: infra/azure-ai-platform
         run: |
           RG="rg-pr-${{ github.event.number }}"
           az deployment group what-if \
-            --resource-group $RG \
+            --resource-group "$RG" \
             --template-file platform.bicep \
             --parameters @parameters.json
-``
