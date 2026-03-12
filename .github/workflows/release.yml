@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release ZIP
+        run: |
+          zip -r platform_infra.zip infra/azure-ai-platform
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: platform_infra.zip

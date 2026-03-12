@@ -1,0 +1,19 @@
+name: Cleanup stale issues
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 45
+          days-before-close: 10
+          stale-issue-label: "stale"
+          exempt-issue-labels: "workshop"

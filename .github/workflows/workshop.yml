@@ -1,0 +1,32 @@
+name: Wednesday Workshops
+
+on:
+  schedule:
+    - cron: "0 7 * * 3"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  weekly-workshop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create workshop issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split("T")[0];
+            const body = require('fs')
+              .readFileSync('docs/workshops/agenda.md','utf8');
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Weekly Workshop – ${date}`,
+              body,
+              labels: ['workshop']
+            });

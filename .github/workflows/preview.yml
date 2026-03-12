@@ -1,0 +1,36 @@
+name: PR Preview Deploy
+
+on:
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create temporary RG
+        run: |
+          RG="rg-pr-${{ github.event.number }}"
+          az group create -n $RG -l westeurope
+
+      - name: What-if preview
+        working-directory: infra/azure-ai-platform
+        run: |
+          RG="rg-pr-${{ github.event.number }}"
+          az deployment group what-if \
+            --resource-group $RG \
+            --template-file platform.bicep \
+            --parameters @parameters.json
+``

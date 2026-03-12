@@ -1,0 +1,12 @@
+infra:
+  - infra/**
+modules:
+  - infra/**/modules/**
+openai:
+  - infra/**/modules/openai.bicep
+claude:
+  - infra/**/modules/anthropic.bicep
+watsonx:
+  - infra/**/modules/watsonx.bicep
+docs:
+  - docs/**
