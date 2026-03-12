@@ -16,10 +16,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Azure CLI
         uses: azure/cli@v2
-      - name: Bicep version
+      - name: Validate Bicep (build)
         run: az bicep version || az bicep install
       - name: Validate Bicep (build)
-        working-directory: infra/azure-ai-platform
+        working-directory: cegeka-ai-platform-github/infra/azure-ai-platform
         run: az bicep build --file platform.bicep
       - name: Comment success on PR
         if: github.event_name == 'pull_request'
