@@ -1,10 +1,10 @@
-name: Deploy DEV (manual)
+name: Deploy DEV
 
 on:
   workflow_dispatch:
     inputs:
       resourceGroup:
-        description: 'Target resource group'
+        description: 'Resource Group'
         required: true
         default: 'rg-ai-foundry'
       location:
@@ -17,10 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-dev:
     runs-on: ubuntu-latest
     environment: dev
-
     steps:
       - uses: actions/checkout@v4
 
@@ -35,15 +34,19 @@ jobs:
         run: |
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az bicep install
-          az version
 
-      - name: Create/ensure RG
-        run: az group create -n "${{ github.event.inputs.resourceGroup }}" -l "${{ github.event.inputs.location }}"
+      - name: What-if DEV
+        working-directory: infra/azure-ai-platform
+        run: |
+          az deployment group what-if \
+            --resource-group "${{ github.event.inputs.resourceGroup }}" \
+            --template-file platform.bicep \
+            --parameters @parameters.json
 
-      - name: Deploy Bicep to RG
+      - name: Deploy DEV
         working-directory: infra/azure-ai-platform
         run: |
           az deployment group create \
             --resource-group "${{ github.event.inputs.resourceGroup }}" \
-            --template-file "platform.bicep" \
+            --template-file platform.bicep \
             --parameters @parameters.json

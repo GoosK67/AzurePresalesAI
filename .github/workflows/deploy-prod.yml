@@ -1,14 +1,14 @@
-name: Deploy PROD (gated)
+name: Deploy PROD
 
 on:
   workflow_dispatch:
     inputs:
       resourceGroup:
-        description: 'Doel-RG (bv. rg-ai-foundry-prod)'
+        description: 'Prod Resource Group'
         required: true
         default: 'rg-ai-foundry-prod'
       location:
-        description: 'Azure regio'
+        description: 'Azure region'
         required: true
         default: 'westeurope'
 
@@ -25,13 +25,11 @@ env:
   PARAMS: infra/azure-ai-platform/parameters.json
 
 jobs:
-  prod-guard:
+  deploy-prod:
     runs-on: ubuntu-latest
     environment: prod
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -40,22 +38,19 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Install Azure CLI (incl. bicep)
+      - name: Install Azure CLI + Bicep
         run: |
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az bicep install
 
-      - name: Create/ensure RG
-        run: az group create -n "${{ github.event.inputs.resourceGroup }}" -l "${{ github.event.inputs.location }}"
-
-      - name: What-if (PROD)
+      - name: What-if PROD
         run: |
           az deployment group what-if \
             --resource-group "${{ github.event.inputs.resourceGroup }}" \
             --template-file "${{ env.TEMPLATE }}" \
             --parameters @"${{ env.PARAMS }}"
 
-      - name: Deploy (PROD)
+      - name: Deploy PROD
         run: |
           az deployment group create \
             --resource-group "${{ github.event.inputs.resourceGroup }}" \
