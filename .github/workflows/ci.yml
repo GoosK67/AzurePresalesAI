@@ -1,26 +1,45 @@
-
 name: CI
+
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
 permissions:
   contents: read
-  id-token: write
   pull-requests: write
+  id-token: write
+
 jobs:
   build-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Azure CLI
-        uses: azure/cli@v2
-      - name: Validate Bicep (build)
-        run: az bicep version || az bicep install
-      - name: Validate Bicep (build)
-        working-directory: cegeka-ai-platform-github/infra/azure-ai-platform
-        run: az bicep build --file platform.bicep
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Installeer Bicep CLI rechtstreeks (licht en snel)
+      - name: Setup Bicep
+        uses: azure/setup-bicep@v1
+
+      # Valideer of Bicep werkt
+      - name: Bicep version
+        run: bicep --version
+
+      # Build/validate platform.bicep (faalt bij syntax/refs)
+      - name: Build Bicep (platform)
+        working-directory: infra/azure-ai-platform
+        run: bicep build platform.bicep
+
+      # Optioneel: Lint alle modules (faalt bij parse errors)
+      - name: Build all modules
+        working-directory: infra/azure-ai-platform/modules
+        run: |
+          for f in *.bicep; do
+            echo "Building $f"
+            bicep build "$f"
+          done
+
       - name: Comment success on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
