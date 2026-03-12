@@ -35,6 +35,7 @@ jobs:
         run: |
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az bicep install
+          az version
 
       - name: Create/ensure RG
         run: az group create -n "${{ github.event.inputs.resourceGroup }}" -l "${{ github.event.inputs.location }}"

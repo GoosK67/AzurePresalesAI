@@ -61,3 +61,4 @@ jobs:
             --resource-group "${{ github.event.inputs.resourceGroup }}" \
             --template-file "${{ env.TEMPLATE }}" \
             --parameters @"${{ env.PARAMS }}"
+
