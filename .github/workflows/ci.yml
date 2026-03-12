@@ -18,20 +18,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install Bicep (correct Azure action)
-      - name: Setup Bicep
-        uses: Azure/setup-bicep@v1
+      # Install Azure CLI + Bicep
+      - name: Install Azure CLI + Bicep
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az bicep install
+          az version
+          bicep --version
 
-      - name: Check Bicep version
-        run: bicep --version
-
-      # Validate platform.bicep
       - name: Build platform.bicep
         working-directory: infra/azure-ai-platform
         run: bicep build platform.bicep
 
-      # Validate all modules
-      - name: Build modules
+      - name: Build all modules
         working-directory: infra/azure-ai-platform/modules
         run: |
           for f in *.bicep; do
