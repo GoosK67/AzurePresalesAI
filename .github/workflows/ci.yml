@@ -18,21 +18,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Installeer Bicep CLI rechtstreeks (licht en snel)
+      # Install Bicep (correct Azure action)
       - name: Setup Bicep
-        uses: azure/setup-bicep@v1
+        uses: Azure/setup-bicep@v1
 
-      # Valideer of Bicep werkt
-      - name: Bicep version
+      - name: Check Bicep version
         run: bicep --version
 
-      # Build/validate platform.bicep (faalt bij syntax/refs)
-      - name: Build Bicep (platform)
+      # Validate platform.bicep
+      - name: Build platform.bicep
         working-directory: infra/azure-ai-platform
         run: bicep build platform.bicep
 
-      # Optioneel: Lint alle modules (faalt bij parse errors)
-      - name: Build all modules
+      # Validate all modules
+      - name: Build modules
         working-directory: infra/azure-ai-platform/modules
         run: |
           for f in *.bicep; do
