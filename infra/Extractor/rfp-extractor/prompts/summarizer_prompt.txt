@@ -1,1 +1,4 @@
-summarizer prompt
+Summarize the following RFP fragment for an executive audience in 3-5 bullet points.
+Focus on scope, non-functional requirements, service levels, and constraints.
+Text:
+{{text}}
